@@ -165,6 +165,12 @@ palettes larger than 128 states), and the CLI.
 - Redstone quirks (quasi-connectivity, 0-tick pulses, update order) are
   version-specific. Test in the target version.
 
+## Credits
+
+Bundled example schematics and their authors are listed in
+[CREDITS.md](CREDITS.md). The `tf001_spruce_wither` schematic is a copy of
+Scorpio's TF001 Big Spruce Wither farm from the Wither Archive.
+
 ## License
 
 Public domain / CC0. Use it however you like.
