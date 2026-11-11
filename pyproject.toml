@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcba"
+version = "0.1.0"
+description = "Author Minecraft builds and export .litematic / .schem"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+mcba = "mcba.cli:main"
+
+[tool.setuptools]
+packages = ["mcba"]
