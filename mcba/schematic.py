@@ -264,6 +264,11 @@ def load_litematic(path: str) -> Build:
         ox = int(pos.get("x", 0))
         oy = int(pos.get("y", 0))
         oz = int(pos.get("z", 0))
+        # Litematica stores entity ``Pos`` relative to the region's original
+        # Position anchor, while blocks/tile entities are stored relative to
+        # the (normalized) minimum corner. Keep the anchor before normalizing
+        # so entities in negative-size regions are not shifted.
+        anchor_x, anchor_y, anchor_z = ox, oy, oz
         size_tag = region.get("Size", {})
         sx = int(size_tag.get("x", 0))
         sy = int(size_tag.get("y", 0))
@@ -303,9 +308,9 @@ def load_litematic(path: str) -> Build:
             pos_list = entry.get("Pos", [])
             if len(pos_list) != 3:
                 continue
-            ex = ox + float(pos_list[0])
-            ey = oy + float(pos_list[1])
-            ez = oz + float(pos_list[2])
+            ex = anchor_x + float(pos_list[0])
+            ey = anchor_y + float(pos_list[1])
+            ez = anchor_z + float(pos_list[2])
             data = nbt.NBTCompound(entry)
             data.pop("Pos", None)
             entity_id = str(data.pop("id", "minecraft:pig"))

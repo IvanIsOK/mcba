@@ -181,6 +181,45 @@ class LitematicTest(unittest.TestCase):
             self.assertEqual(back.blocks, {})
             self.assertEqual(back.entities[0].pos, (5.5, 2.0, -3.5))
 
+    def test_negative_size_region_entity_uses_position_anchor(self):
+        # Litematica stores entity Pos relative to the region Position, while
+        # blocks are relative to the normalized minimum corner.  A negative
+        # size must not shift the entity by the region size.
+        from mcba.schematic import _bits_for_palette, pack_litematica
+        palette = nbt.NBTList([
+            nbt.NBTCompound({"Name": "minecraft:air"}),
+            nbt.NBTCompound({"Name": "minecraft:stone"}),
+        ], elem_type=nbt.TAG_COMPOUND)
+        longs = pack_litematica([1, 1], _bits_for_palette(len(palette)))
+        region = nbt.NBTCompound({
+            "Position": nbt.NBTCompound({
+                "x": nbt.NBTInt(5), "y": nbt.NBTInt(0), "z": nbt.NBTInt(0)}),
+            "Size": nbt.NBTCompound({
+                "x": nbt.NBTInt(-2), "y": nbt.NBTInt(1), "z": nbt.NBTInt(1)}),
+            "BlockStatePalette": palette,
+            "BlockStates": nbt.NBTLongArray(longs),
+            "TileEntities": nbt.NBTList([], elem_type=nbt.TAG_COMPOUND),
+            "Entities": nbt.NBTList([nbt.NBTCompound({
+                "id": "minecraft:pig",
+                "Pos": nbt.NBTList([
+                    nbt.NBTDouble(-0.5), nbt.NBTDouble(0.0),
+                    nbt.NBTDouble(0.5)], elem_type=nbt.TAG_DOUBLE),
+            })], elem_type=nbt.TAG_COMPOUND),
+        })
+        root = nbt.NBTCompound({
+            "Version": nbt.NBTInt(6),
+            "MinecraftDataVersion": nbt.NBTInt(3955),
+            "Metadata": nbt.NBTCompound({"Name": "neg-size"}),
+            "Regions": nbt.NBTCompound({"main": region}),
+        })
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "neg-size.litematic")
+            with open(path, "wb") as fh:
+                fh.write(nbt.dumps(root, gzipped=True))
+            back = load_litematic(path)
+        self.assertEqual(set(back.blocks), {(4, 0, 0), (5, 0, 0)})
+        self.assertEqual(back.entities[0].pos, (4.5, 0.0, 0.5))
+
     def test_many_palette_entries_cross_long_boundary(self):
         b = Build("palette")
         instruments = ["harp", "basedrum", "snare", "hat", "bass", "flute",
